@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Mouser Tracker</title>
+    <style>
+    video,
+    #canvas,
+    #video {
+        margin-left: 100px;
+        margin-top: 35px;
+        position: absolute;
+    }
+    
+    canvas,
+    video {
+        -moz-transform: scale(-1, 1);
+        -o-transform: scale(-1, 1);
+        -webkit-transform: scale(-1, 1);
+       /* filter: FlipH;*/
+        transform: scale(-1, 1);
+    }
+    </style>
+    </style>
+</head>
+
+<body>
+    <div>
+        <video id="video" width="600" height="450" preload autoplay loop muted controls></video>
+        <canvas id="canvas" width="600" height="450"></canvas>
+    </div>
+    <script src="lib/tracking/build/tracking-min.js"></script>
+    <script src="lib/dat-gui/build/dat.gui.min.js"></script>
+    <script src="lib/tracking/examples/assets/stats.min.js"></script>
+    <script src="lib/tracking/examples/assets/color_camera_gui.js"></script>
+    <script src="lib//socket.io-client/socket.io.js"></script>
+    <script>
+    window.onload = function() {
+        var video = document.getElementById('video');
+        var canvas = document.getElementById('canvas');
+        var context = canvas.getContext('2d');
+        var socket = io.connect('http://localhost');
+        var tracker = new tracking.ColorTracker();
+
+        tracking.track('#video', tracker, {
+            camera: true
+        });
+
+        tracker.on('track', function(event) {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+
+            event.data.forEach(function(rect) {
+                if (rect.color === 'custom') {
+                    rect.color = tracker.customColor;
+                }
+                socket.emit('data_tracker', rect);
+                context.strokeStyle = rect.color;
+                context.strokeRect(rect.x, rect.y, rect.width, rect.height);
+                context.font = '11px Helvetica';
+                context.fillStyle = "#fff";
+                context.fillText('x: ' + rect.x + 'px', rect.x + rect.width + 5, rect.y + 11);
+                context.fillText('y: ' + rect.y + 'px', rect.x + rect.width + 5, rect.y + 22);
+            });
+        });
+
+        initGUIControllers(tracker);
+    };
+    </script>
+</body>
+
+</html>
