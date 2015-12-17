@@ -5,7 +5,7 @@ var io = require('socket.io')(server);
 var robot = require("robotjs");
 robot.setMouseDelay(5);
 
-app.use(express.static(__dirname + '/www'));
+app.use(express.static(__dirname + '/bower_components'));
 app.get('/', function(req, res, next) {
     res.sendFile(__dirname + '/index.html');
 });
